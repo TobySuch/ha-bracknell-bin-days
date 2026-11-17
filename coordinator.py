@@ -17,7 +17,7 @@ API_PARAMS = {
 class BinDaysCoordinator(DataUpdateCoordinator):
     """Fetch bin collection data once per day."""
 
-    def __init__(self, hass: HomeAssistant, address_id: str):
+    def __init__(self, hass: HomeAssistant, address_id: str, expected_rounds=()):
         super().__init__(
             hass,
             _LOGGER,
@@ -25,6 +25,7 @@ class BinDaysCoordinator(DataUpdateCoordinator):
             update_interval=timedelta(hours=12),
         )
         self._address_id = address_id
+        self._expected_rounds = tuple(expected_rounds)
 
     async def _async_update_data(self):
         api_data = (
@@ -65,6 +66,15 @@ class BinDaysCoordinator(DataUpdateCoordinator):
                     "days_until": days_until,
                     "upcoming": item.get("upcomingCollections", []),
                 }
+
+            missing = [r for r in self._expected_rounds if r not in collections]
+            if missing:
+                _LOGGER.warning(
+                    "Bracknell Bins: no data for expected round(s) %s. "
+                    "The council may have renamed them. Rounds returned by the API: %s",
+                    missing,
+                    sorted(collections),
+                )
 
             return collections
 

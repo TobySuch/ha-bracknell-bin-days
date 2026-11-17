@@ -8,7 +8,7 @@ DOMAIN = "bracknell_bins"
 CONF_ADDRESS_ID = "address_id"
 
 BIN_TYPES = [
-    ("Food", "Food Bin", "mdi:food-apple"),
+    ("Food waste", "Food Bin", "mdi:food-apple"),
     ("Recycling", "Recycling Bin", "mdi:recycle"),
     ("General waste", "General Waste Bin", "mdi:trash-can"),
 ]
@@ -18,7 +18,9 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     address_id = config.get(CONF_ADDRESS_ID)
     if not address_id:
         return
-    coordinator = BinDaysCoordinator(hass, address_id)
+    coordinator = BinDaysCoordinator(
+        hass, address_id, expected_rounds=[key for key, _, _ in BIN_TYPES]
+    )
     await coordinator.async_refresh()
     async_add_entities(
         BinSensor(coordinator, round_key, friendly_name, icon)
