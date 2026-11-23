@@ -67,10 +67,14 @@ class BinDaysCoordinator(DataUpdateCoordinator):
                     "upcoming": item.get("upcomingCollections", []),
                 }
 
-            missing = [r for r in self._expected_rounds if r not in collections]
+            missing = [
+                names
+                for names in self._expected_rounds
+                if not any(n in collections for n in names)
+            ]
             if missing:
                 _LOGGER.warning(
-                    "Bracknell Bins: no data for expected round(s) %s. "
+                    "Bracknell Bins: no data for expected round(s) (accepted names) %s. "
                     "The council may have renamed them. Rounds returned by the API: %s",
                     missing,
                     sorted(collections),
